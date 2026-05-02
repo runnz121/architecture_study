@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: video-tutorials
+  datasource:
+    url: jdbc:postgresql://localhost:5432/video_tutorials
+    username: postgres
+    password: postgres
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
