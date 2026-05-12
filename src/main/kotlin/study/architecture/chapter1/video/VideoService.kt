@@ -1,4 +1,4 @@
-package study.architecture.video
+package study.architecture.chapter1.video
 
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional

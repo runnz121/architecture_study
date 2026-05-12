@@ -1,4 +1,4 @@
-package study.architecture.video
+package study.architecture.chapter1.video
 
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/chapter1")
 class VideoController(private val videoService: VideoService) {
 
     @GetMapping("/home")

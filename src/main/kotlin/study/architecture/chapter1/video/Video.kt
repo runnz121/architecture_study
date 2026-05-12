@@ -1,4 +1,4 @@
-package study.architecture.video
+package study.architecture.chapter1.video
 
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue

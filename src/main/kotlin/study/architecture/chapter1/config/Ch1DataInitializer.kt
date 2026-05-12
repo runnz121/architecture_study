@@ -1,12 +1,12 @@
-package study.architecture.config
+package study.architecture.chapter1.config
 
 import org.springframework.boot.CommandLineRunner
 import org.springframework.stereotype.Component
-import study.architecture.video.Video
-import study.architecture.video.VideoRepository
+import study.architecture.chapter1.video.Video
+import study.architecture.chapter1.video.VideoRepository
 
 @Component
-class DataInitializer(private val videoRepository: VideoRepository) : CommandLineRunner {
+class Ch1DataInitializer(private val videoRepository: VideoRepository) : CommandLineRunner {
     override fun run(vararg args: String) {
         if (videoRepository.count() == 0L) {
             videoRepository.saveAll(
