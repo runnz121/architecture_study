@@ -1,10 +1,10 @@
-package study.architecture.chapter2.video
+package study.architecture.chapter3.video
 
 import org.springframework.stereotype.Service
-import study.architecture.chapter2.messagestore.MessageRepository
-import study.architecture.chapter2.messagestore.MessageStore
+import study.architecture.chapter3.messagestore.MessageRepository
+import study.architecture.chapter3.messagestore.MessageStore
 
-@Service("ch2RecordViewingsService")
+@Service("ch3RecordViewingsService")
 class RecordViewingsService(
     private val messageStore: MessageStore,
     private val messageRepository: MessageRepository

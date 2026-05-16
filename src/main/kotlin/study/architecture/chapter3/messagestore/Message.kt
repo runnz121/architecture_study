@@ -1,4 +1,4 @@
-package study.architecture.chapter2.messagestore
+package study.architecture.chapter3.messagestore
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -10,7 +10,7 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 @Entity
-@Table(name = "ch2_messages")
+@Table(name = "ch3_messages")
 class Message(
     @Id
     val id: UUID = UUID.randomUUID(),

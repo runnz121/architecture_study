@@ -3,7 +3,7 @@ package study.architecture.chapter2.messagestore
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 
-@Component
+@Component("ch2MessageStore")
 class MessageStore(private val messageRepository: MessageRepository) {
 
     @Transactional

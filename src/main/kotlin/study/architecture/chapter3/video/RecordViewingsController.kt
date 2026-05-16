@@ -1,4 +1,4 @@
-package study.architecture.chapter2.video
+package study.architecture.chapter3.video
 
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
-@RestController("ch2RecordViewingsController")
-@RequestMapping("/api/chapter2")
+@RestController("ch3RecordViewingsController")
+@RequestMapping("/api/chapter3")
 class RecordViewingsController(private val recordViewingsService: RecordViewingsService) {
 
     @GetMapping("/home")
