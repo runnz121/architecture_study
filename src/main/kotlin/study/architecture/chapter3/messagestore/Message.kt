@@ -9,7 +9,7 @@ import jakarta.persistence.Table
 import java.time.LocalDateTime
 import java.util.UUID
 
-@Entity
+@Entity(name = "Ch3Message")
 @Table(name = "ch3_messages")
 class Message(
     @Id
@@ -24,8 +24,7 @@ class Message(
     @Column(nullable = false)
     val position: Long = 0,
 
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(insertable = false, updatable = false)
+    @Column(updatable = false)
     val globalPosition: Long = 0,
 
     @Column(columnDefinition = "TEXT")
