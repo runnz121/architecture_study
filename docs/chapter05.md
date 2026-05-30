@@ -295,3 +295,101 @@ function createMessageStore ({ db }) {
 4. Application이 View Data를 사용하여 홈 페이지를 업데이트한다
 
 > Message Store는 이제 **데이터베이스**이자 **데이터 전송(data transport)** 역할을 수행하며, pub/sub 기반의 decoupled architecture를 가능하게 한다. Polling은 화려하지 않지만 신뢰성 있고 운영 부담이 적은 방식이다.
+
+---
+
+## 멱등성(Idempotency) 보장 메커니즘 상세
+
+### 핵심 원리: View Data 테이블에 마지막 처리 position을 같이 저장
+
+Aggregator가 이벤트를 처리할 때, 비즈니스 데이터와 함께 **해당 이벤트의 globalPosition을 View Data 테이블에 기록**한다. 이를 통해 중복 처리를 방지한다.
+
+```
+pages 테이블 (View Data):
+┌───────────┬─────────────────┬──────────────────────┐
+│ page_name │ videos_watched  │ last_processed_pos   │
+├───────────┼─────────────────┼──────────────────────┤
+│ home      │ 3               │ 5                    │
+└───────────┴─────────────────┴──────────────────────┘
+```
+
+### 핸들러 코드
+
+```javascript
+VideoViewed: (event) => {
+  db.query(
+    `UPDATE pages
+     SET videos_watched = videos_watched + 1,
+         last_processed_pos = $1
+     WHERE page_name = 'home'
+       AND last_processed_pos < $1`,
+    [event.globalPosition]    // 메시지가 갖고 온 globalPosition을 그대로 사용
+  )
+}
+```
+
+- `event.globalPosition`: messages 테이블에서 폴링으로 가져온 이벤트에 이미 포함된 값
+- SELECT 없이 **WHERE 절이 중복 판단을 겸함**
+- 비즈니스 로직(+1)과 처리 기록(last_processed_pos 갱신)이 **하나의 SQL문**으로 원자적 실행
+
+### 두 가지 position의 역할 구분
+
+```
+messages 테이블의 Read 이벤트        pages 테이블의 last_processed_pos
+(subscriberPosition-* 스트림)       (View Data)
+──────────────────────────         ──────────────────────────────
+100개마다 저장 (부정확)               매 처리마다 갱신 (정확)
+용도: 재시작 시 폴링 시작 위치         용도: 중복 처리 방지 (멱등성)
+없어도 동작함 (0부터 다시 읽으면 됨)    없으면 멱등 보장 불가
+성능 최적화                          정확성 보장
+```
+
+### 크래시 복구 시나리오
+
+```
+[정상 처리]
+  global 0 처리 → pages: videos_watched=1, last_processed_pos=0
+  global 1 처리 → pages: videos_watched=2, last_processed_pos=1
+  global 2 처리 → pages: videos_watched=3, last_processed_pos=2
+  Read 이벤트 저장 → messages: {"position": 2}
+  global 4 처리 → pages: videos_watched=4, last_processed_pos=4
+
+[크래시 발생! 💥] — Read 이벤트 아직 안 씀
+
+[재시작]
+  loadPosition() → messages의 Read 이벤트 → position: 2
+  currentPosition = 2 → global_position >= 3부터 폴링
+
+[중복 처리 발생]
+  global 4 또 들어옴:
+    WHERE last_processed_pos < 4
+    → pages의 last_processed_pos는 이미 4
+    → 4 < 4 → 거짓 → 무시됨 ✅
+
+  global 5 처리 (정상):
+    WHERE last_processed_pos < 5
+    → 4 < 5 → 참 → 실행됨 ✅
+    → pages: videos_watched=5, last_processed_pos=5
+```
+
+### 멱등 패턴 정리
+
+| 상황 | 멱등 전략 | 예시 |
+|------|----------|------|
+| 숫자 증가 (조회수) | `WHERE last_processed_pos < $1` | 이미 처리한 position이면 무시 |
+| 외부 호출 (이메일) | 처리 전 "이미 했나?" 이벤트 확인 | Sent 이벤트 존재 여부 체크 |
+| 데이터 삽입 | `ON CONFLICT DO NOTHING` | 중복 키면 무시 |
+| 상태 변경 | 현재 상태 확인 후 처리 | 이미 그 상태면 스킵 |
+
+### 설계 철학: 트랜잭션이 필요 없는 구조
+
+핸들러를 **SQL 1개로 설계**하면 DB가 자체적으로 원자성을 보장하므로 별도 트랜잭션이 불필요하다.
+
+```
+Aggregator 하나 = 관심사 하나 = 테이블 하나
+
+home-page Aggregator   → pages 테이블만 업데이트
+video-stats Aggregator → video_stats 테이블만 업데이트
+```
+
+> **이 아키텍처의 보장**: at-least-once (최소 1번 처리). exactly-once는 보장하지 않는다. 대신 핸들러를 멱등하게 구현하여 중복 처리해도 결과가 동일하게 만든다.
