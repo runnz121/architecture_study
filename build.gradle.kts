@@ -24,6 +24,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-redis")
 	implementation("org.springframework.boot:spring-boot-starter-webflux")
 	implementation("org.springframework.boot:spring-boot-starter-webmvc")
+	implementation("org.springframework.security:spring-security-crypto")
 	implementation("org.springframework:spring-aop")
 	implementation("org.aspectj:aspectjweaver:1.9.25.1")
 	implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
