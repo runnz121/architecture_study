@@ -20,3 +20,9 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+# Chapter 9: send-email Component 설정 (env.js의 EMAIL_DIRECTORY / SYSTEM_SENDER_EMAIL_ADDRESS 대응)
+app:
+  email:
+    directory: ./emails/ch9
+    sender: no-reply@video-tutorials.example.com

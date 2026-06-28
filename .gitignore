@@ -38,3 +38,6 @@ out/
 
 ### Kotlin ###
 .kotlin
+
+### Chapter 9: send-email pickup transport 출력 ###
+emails/
